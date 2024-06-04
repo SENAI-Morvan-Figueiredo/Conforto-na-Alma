@@ -93,7 +93,7 @@ async def create_cliente(
     values = (nome, data_de_nascimento, crm, unidade, rg, cpf, email, telefone, cep, estado, cidade, bairro, endereco, numero, senha, genero)
     db_cursor.execute(query, values)
     db_connection.commit()
-    return templates.TemplateResponse("funcionarioCadastrado.html", {"request": request})
+    return templates.TemplateResponse("funCadastrado.html", {"request": request})
 
 
 @router_medico.put("/Medicos/{cliente_id}")
@@ -121,7 +121,7 @@ async def delete_cliente(cliente_id: int):
 async def get_funlogin(request: Request,):
     return templates.TemplateResponse("login_funcionario.html", {"request": request})
 
-@router_medico.post("/Medicos/Login")
+@router_medico.post("/Medicos/Login/")
 async def login_cliente(
     request: Request,
     email: str = Form(...),
@@ -134,7 +134,7 @@ async def login_cliente(
     if usuarioExiste:
         global boolLogado
         boolLogado = usuarioExiste
-        return "Message: Médico cadastrado"
+        return templates.TemplateResponse("perfil_medico.html", {"request": request})
         
     else: 
         return {"message": "Cliente não encontrado"}
@@ -143,10 +143,6 @@ async def login_cliente(
 async def verificarLogin():
     global boolLogado
     return boolLogado
-
-@router_medico.get("/Medicos/perfil/")
-async def get_medperfil(request: Request,):
-    return templates.TemplateResponse("perfil_medico.html", {"request": request})
 
 @router_medico.get("/Medicos/Perfil/")
 async def exibirPerfil(request: Request):
