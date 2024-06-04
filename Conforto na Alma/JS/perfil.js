@@ -1,5 +1,6 @@
 const url = '/Clientes/Perfil/';
 const agendamentosContainer = document.getElementById('agendamentosCliente');
+const historicoContainer = document.getElementById('historicoCliente');
 
 
 const options = {
@@ -39,53 +40,89 @@ fetch(url, options)
     const endereco = document.getElementById('endValue')
     endereco.textContent = data[0][11]; // Supondo que o endereço esteja na décima segunda posição de infoCliente
 
-    data[1].forEach((agendamentoData, index) => {
-      const novoAgendamento = document.createElement('div');
-      novoAgendamento.classList.add('section-1');
+    fetch(url, options)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erro na requisição');
+      }
+      return response.json(); 
+    })
+    .then(data => {
+      const nome = document.querySelector('h1.nome');
+      nome.textContent = data[0][1]; // Supondo que o nome esteja na primeira posição de infoCliente
   
-      const titulo = document.createElement('div');
-      titulo.id = 'marcada';
-      titulo.textContent = agendamentoData[3] + " - " +agendamentoData[4];
+      const idade = document.querySelector('td.idade');
+      idadeUsuario = calcularIdade(data[0][2]); // Supondo que a data de nascimento esteja na segunda posição de infoCliente
+      idade.textContent = "Idade: " + idadeUsuario + ' anos';
   
-      const dataParagrafo = document.createElement('p');
-      dataParagrafo.textContent = '';
+      const cpf = document.querySelector('td.cpf');
+      cpf.textContent = "CPF: " + data[0][4]; // Supondo que o CPF esteja na quarta posição de infoCliente
   
-      const botoesContainer = document.createElement('div');
-      botoesContainer.classList.add('botoes-container');
+      const email = document.getElementById('mailValue');
+      email.textContent = data[0][5]; // Supondo que o email esteja na quinta posição de infoCliente
   
-      const detalhesBtn = document.createElement('button');
-      detalhesBtn.classList.add('btn', 'btn-custom');
-      detalhesBtn.textContent = 'Ver detalhes';
+      const telefone = document.getElementById('telValue');
+      telefone.textContent = data[0][6]; // Supondo que o telefone esteja na sexta posição de infoCliente
   
-      const desmarcarBtn = document.createElement('button');
-      desmarcarBtn.classList.add('btn-cancel');
-      desmarcarBtn.textContent = 'Desmarcar';
-
-      detalhesBtn.addEventListener('click', () => {
-        var info = data[1][index];
-        var jsonString = JSON.stringify(info);
-        localStorage.setItem('detalhesAgendamento', jsonString);
-        window.location.href = '/Detalhes/Consulta/';
-        console.log(data[1][index]); 
+      const cep = document.getElementById('cepValue');
+      cep.textContent = data[0][7]; // Supondo que o CEP esteja na sétima posição de infoCliente
+  
+      const endereco = document.getElementById('endValue');
+      endereco.textContent = data[0][11]; // Supondo que o endereço esteja na décima segunda posição de infoCliente
+  
+      data[1].forEach((agendamentoData, index) => {
+        const dataAgendamento = new Date(agendamentoData[1]); // Supondo que a data do agendamento esteja na segunda posição de agendamentoData
+        const hoje = new Date();
+  
+        const novoAgendamento = document.createElement('div');
+        novoAgendamento.classList.add('section-1');
+    
+        const titulo = document.createElement('div');
+        titulo.id = 'marcada';
+        titulo.textContent = agendamentoData[3] + " - " + agendamentoData[4];
+    
+        const dataParagrafo = document.createElement('p');
+        dataParagrafo.textContent = agendamentoData[1];
+    
+        const botoesContainer = document.createElement('div');
+        botoesContainer.classList.add('botoes-container');
+    
+        const detalhesBtn = document.createElement('button');
+        detalhesBtn.classList.add('btn', 'btn-custom');
+        detalhesBtn.textContent = 'Ver detalhes';
+    
+        const desmarcarBtn = document.createElement('button');
+        desmarcarBtn.classList.add('btn-cancel');
+        desmarcarBtn.textContent = 'Desmarcar';
+  
+        detalhesBtn.addEventListener('click', () => {
+          var info = data[1][index];
+          var jsonString = JSON.stringify(info);
+          localStorage.setItem('detalhesAgendamento', jsonString);
+          window.location.href = '/Detalhes/Consulta/';
+          console.log(data[1][index]); 
+        });
+  
+        desmarcarBtn.addEventListener('click', () => {
+          var agendamentoDelete = data[1][index][0]; 
+          window.location.href = `/Desmarcar/Consulta/${agendamentoDelete}`;
+          console.log(data[1][index][0]); 
+        });
+  
+        botoesContainer.appendChild(detalhesBtn);
+        botoesContainer.appendChild(desmarcarBtn);
+    
+        novoAgendamento.appendChild(titulo);
+        novoAgendamento.appendChild(dataParagrafo);
+        novoAgendamento.appendChild(botoesContainer);
+    
+        if (dataAgendamento >= hoje) {
+          agendamentosContainer.appendChild(novoAgendamento);
+        } else {
+          historicoContainer.appendChild(novoAgendamento);
+        }
+      });
     });
-
-    desmarcarBtn.addEventListener('click', () => {
-      var agendamentoDelete = data[1][index][0]; 
-      window.location.href = `/Desmarcar/Consulta/${agendamentoDelete}`;
-      
-      console.log(data[1][index][0]); 
-  });
-
-
-      botoesContainer.appendChild(detalhesBtn);
-      botoesContainer.appendChild(desmarcarBtn);
-  
-      novoAgendamento.appendChild(titulo);
-      novoAgendamento.appendChild(dataParagrafo);
-      novoAgendamento.appendChild(botoesContainer);
-  
-      agendamentosContainer.appendChild(novoAgendamento);
-  });
 
   
 
@@ -140,7 +177,11 @@ fetch(url, options)
     novoAgendamento.appendChild(dataParagrafo);
     novoAgendamento.appendChild(botoesContainer);
 
-    agendamentosContainer.appendChild(novoAgendamento);
+    if (dataAgendamento >= hoje) {
+      agendamentosContainer.appendChild(novoAgendamento);
+    } else {
+      historicoContainer.appendChild(novoAgendamento);
+    }
 });
 
 
@@ -164,6 +205,35 @@ fetch(url, options)
 
 
   
+
+
+
+
+
+
+  
+
+
+  function calcularIdade(dataNascimento) {
+    const hoje = new Date();
+    const nascimento = new Date(dataNascimento);
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mes = hoje.getMonth() - nascimento.getMonth();
+    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+      idade--;
+    }
+    return idade;
+  }
+
+
+
+
+
+
+
+
+
+
 
 
 
